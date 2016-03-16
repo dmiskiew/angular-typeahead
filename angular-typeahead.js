@@ -14,8 +14,11 @@ angular.module('siyfion.sfTypeahead', [])
             init = true;
 
         var customSuggestion = scope.options.customSuggestion;
+        var customSuggestionClass = scope.options.customSuggestionClass;
         delete scope.options.customSuggestion;
+        delete scope.options.customSuggestionClass;
         delete options.customSuggestion;
+        delete options.customSuggestionClass;
 
         // Create the typeahead on the element
         initialize();
@@ -133,10 +136,24 @@ angular.module('siyfion.sfTypeahead', [])
           });
         }
 
-        element.bind('typeahead:render', function(event, suggestions, async, dataset) {
-          if (customSuggestion) {
-            $('.tt-dataset').append(customSuggestion)
+        element.bind('typeahead:render', function(event) {
+          if (customSuggestion && customSuggestionClass && $('.' + customSuggestionClass).length == 0) {
+            $('.tt-dataset').append(customSuggestion);
+            $('.' + customSuggestionClass).unbind('click');
+            $('.' + customSuggestionClass).bind('click', function() {
+              scope.$emit('typeahead:custom_selected');
+            });
+            $('.' + customSuggestionClass).unbind('keypress');
+            $('.' + customSuggestionClass).bind('keypress', function(e) {
+              if (e.which == 13 && $('.tt-add-result.tt-cursor'))
+                scope.$emit('typeahead:custom_selected');
+            })
           }
+        });
+
+        element.bind('keypress', function(e) {
+          if (customSuggestionClass && e.which == 13 && $('.' + customSuggestionClass + '.tt-cursor'))
+            scope.$emit('typeahead:custom_selected');
         });
 
         // Update the value binding when a value is manually selected from the dropdown.
