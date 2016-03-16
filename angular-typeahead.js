@@ -13,6 +13,10 @@ angular.module('siyfion.sfTypeahead', [])
             datasets = (angular.isArray(scope.datasets) ? scope.datasets : [scope.datasets]) || [], // normalize to array
             init = true;
 
+        var customSuggestion = scope.options.customSuggestion;
+        delete scope.options.customSuggestion;
+        delete options.customSuggestion;
+
         // Create the typeahead on the element
         initialize();
 
@@ -99,13 +103,13 @@ angular.module('siyfion.sfTypeahead', [])
 
         function initialize() {
           if (init) {
-            element.typeahead(scope.options, scope.datasets)
+            element.typeahead(scope.options, scope.datasets);
             init = false;
           } else {
             // If datasets or options change, hang onto user input until we reinitialize
             var value = element.val();
             element.typeahead('destroy');
-            element.typeahead(scope.options, scope.datasets)
+            element.typeahead(scope.options, scope.datasets);
             ngModel.$setViewValue(value);
             element.triggerHandler('typeahead:opened');
           }
@@ -128,6 +132,12 @@ angular.module('siyfion.sfTypeahead', [])
             ngModel.$setViewValue(newViewValue);
           });
         }
+
+        element.bind('typeahead:render', function(event, suggestions, async, dataset) {
+          if (customSuggestion) {
+            $('.tt-dataset').append(customSuggestion)
+          }
+        });
 
         // Update the value binding when a value is manually selected from the dropdown.
         element.bind('typeahead:selected', function(object, suggestion, dataset) {
